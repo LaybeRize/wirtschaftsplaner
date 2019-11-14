@@ -51,7 +51,7 @@ public class Industry {
         }
     }
 
-    public boolean checkIfIndustryIsFinal (int position, List<SingleIndustry> singleIndustries) {
+    public static boolean checkIfIndustryIsFinal (int position, List<SingleIndustry> singleIndustries) {
         for (SingleIndustry singleIndustry : singleIndustries) {
             List<Integer> integers = singleIndustry.getPosition();
             for (Integer specificPosition : integers) {

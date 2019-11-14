@@ -22,10 +22,11 @@ public class MainClass {
             e.printStackTrace();
         }
         if (singleIndustries != null) {
-            Industry.SingleIndustry singleIndustry = singleIndustries.get(0);
+            Industry.SingleIndustry singleIndustry = singleIndustries.get(1);
             System.out.println("Industry " + singleIndustry.getOwnPosition() + ":");
             System.out.println(singleIndustry.getPosition());
             System.out.println(singleIndustry.getUsage());
+            System.out.println(Industry.checkIfIndustryIsFinal(singleIndustry.getOwnPosition(),singleIndustries));
         }
     }
 
