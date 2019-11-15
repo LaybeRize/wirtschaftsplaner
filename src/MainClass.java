@@ -4,11 +4,12 @@ import java.sql.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import Industry.*;
 
 public class MainClass {
 
     public static int industries = 10;
-    public static List<Industry.SingleIndustry> singleIndustries;
+    public static List<SingleIndustry> singleIndustries;
 
     public static void main(String[] args) {
         MainClass();
@@ -31,7 +32,7 @@ public class MainClass {
         }
     }
 
-    private static void writeDownCalc(List<Industry.SingleIndustry> singleIndustries) throws Exception{
+    private static void writeDownCalc(List<SingleIndustry> singleIndustries) throws Exception{
         Class.forName("org.sqlite.JDBC");
         Connection conn = DriverManager.getConnection("jdbc:sqlite:wirtschaft.db");
         Statement stat = conn.createStatement();
@@ -46,7 +47,7 @@ public class MainClass {
         stat.executeUpdate(stringIndustries);
 
         //put all Information down
-        for (Industry.SingleIndustry singleIndustry : singleIndustries) {
+        for (SingleIndustry singleIndustry : singleIndustries) {
             String string = "insert into calculation (";
             for (int i : singleIndustry.getPositionFromOtherIndustries()) {
                 string = string + "I" + i + ", ";
@@ -85,10 +86,10 @@ public class MainClass {
         conn.close();
     }
 
-    private static List<Industry.SingleIndustry> allIndustries () throws Exception{
+    private static List<SingleIndustry> allIndustries () throws Exception{
 
         //creates the SingleIndustry Objects from the database for program intern calculation
-        List<Industry.SingleIndustry> singleIndustries = new ArrayList<>();
+        List<SingleIndustry> singleIndustries = new ArrayList<>();
         Class.forName("org.sqlite.JDBC");
         Connection conn = DriverManager.getConnection("jdbc:sqlite:wirtschaft.db");
         Statement stat = conn.createStatement();
@@ -104,7 +105,7 @@ public class MainClass {
             Integer needed = Integer.parseInt(rs.getString("Needed"));
             List<Double> doubles = new ArrayList<>();
             for (String string : strings) doubles.add(Double.parseDouble(string));
-            Industry.SingleIndustry singleIndustry = new Industry.SingleIndustry(industry++,doubles,needed, work);
+            SingleIndustry singleIndustry = new SingleIndustry(industry++,doubles,needed, work);
             singleIndustries.add(singleIndustry);
         }
         rs.close();
