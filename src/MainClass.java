@@ -15,7 +15,6 @@ public class MainClass {
     }
 
     private static void MainClass() {
-        //System.out.println(Paths.get("wirtschaft.db").toAbsolutePath().toString());
         try {
             //initDatabase();
             singleIndustries = allIndustries();

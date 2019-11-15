@@ -114,7 +114,7 @@ public class Industry {
         public Double Work(Double WorkPerUnit,List<SingleIndustry> singleIndustries) {
             Double work = WorkPerUnit;
             for (int i = 0; i < position.size(); i++) {
-                if (work < 0.05) return 0.05;
+                if (work < 0.05) return work;
                 Double tempWork = singleIndustries.get(position.get(i)).Work(usage.get(i)*WorkPerUnit,singleIndustries);
                 work += tempWork;
             }
@@ -150,5 +150,4 @@ public class Industry {
             singleIndustry.recCalcWork(singleIndustry.getWorkPerUnit(),singleIndustries);
         }
     }
-    
 }
