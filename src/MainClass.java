@@ -6,7 +6,7 @@ import java.util.List;
 
 public class MainClass {
 
-    public static int industries = 20;
+    public static int industries = 50;
     public static List<Industry.SingleIndustry> singleIndustries;
 
     public static void main(String[] args) {
@@ -16,7 +16,7 @@ public class MainClass {
     private static void MainClass() {
         //System.out.println(Paths.get("wirtschaft.db").toAbsolutePath().toString());
         try {
-            //initDatabase();
+            initDatabase();
             singleIndustries = allIndustries();
         } catch (Exception e) {
             e.printStackTrace();
@@ -27,29 +27,30 @@ public class MainClass {
             System.out.println(singleIndustry.getPosition());
             System.out.println(singleIndustry.getUsage());
             System.out.println(Industry.checkIfIndustryIsFinal(singleIndustry.getOwnPosition(),singleIndustries));
+            Industry.calcAllIndustries(singleIndustries);
+            for (Industry.SingleIndustry singleIndustries : singleIndustries) {
+                System.out.println("Industry " + singleIndustries.getOwnPosition() + ": " + singleIndustries.returnFullNeed());
+                System.out.println(singleIndustries.getNeedFromOtherIndustries());
+                System.out.println("Cost in Hours: " + singleIndustries.getWorkCostPerUnit());
+            }
         }
     }
 
     private static void initDatabase() throws Exception{
         Class.forName("org.sqlite.JDBC");
-        boolean firstStart = !testForDatabase();
         Connection conn = DriverManager.getConnection("jdbc:sqlite:wirtschaft.db");
         Statement stat = conn.createStatement();
-        if (!firstStart) {
-            System.out.println("init");
-            stat.executeUpdate("drop table if exists industries;");
-            String stringIndustries = "create table industries (";
-            for (int i = 0; i < industries; i++) {
-                stringIndustries = stringIndustries + "I" + i + " STRING DEFAULT 0, ";
-            }
-            stringIndustries = stringIndustries + "I" + industries + " STRING DEFAULT 0);";
-            stat.executeUpdate(stringIndustries);
+        stat.executeUpdate("drop table if exists industries;");
+        String stringIndustries = "create table industries (";
+        for (int i = 0; i < industries; i++) {
+            stringIndustries = stringIndustries + "I" + i + " STRING DEFAULT 0, ";
         }
-        System.out.println(generatePosition() + "|" + generateUsage());
+        stringIndustries = stringIndustries + "I" + industries + " STRING DEFAULT 0, work STRING);";
+        stat.executeUpdate(stringIndustries);
 
         for (int i = 0; i <= industries; i++) {
             List<String> strings = generateAllPositions();
-            String string = "insert into industries (I" + strings.get(0) + ", I" + strings.get(1) + ", I" + strings.get(2) + ") values ("+ generateUsage() + ", "+ generateUsage() + ", "+ generateUsage() + ");";
+            String string = "insert into industries (I" + strings.get(0) + ", I" + strings.get(1) + ", I" + strings.get(2) + ", work) values ("+ generateUsage() + ", "+ generateUsage() + ", "+ generateUsage() + ", 1);";
             stat.executeUpdate(string);
         }
 
@@ -63,14 +64,16 @@ public class MainClass {
         Statement stat = conn.createStatement();
         ResultSet rs = stat.executeQuery("select * from industries;");
         Integer industry = 0;
+        Double work;
         while (rs.next()) {
             List<String> strings = new ArrayList<>();
             for (int i = 0; i <= industries; i++) {
                 strings.add(rs.getString("I"+i));
             }
+            work = Double.parseDouble(rs.getString("work"));
             List<Double> doubles = new ArrayList<>();
             for (String string : strings) doubles.add(Double.parseDouble(string));
-            Industry.SingleIndustry singleIndustry = new Industry.SingleIndustry(industry++,doubles, 100);
+            Industry.SingleIndustry singleIndustry = new Industry.SingleIndustry(industry++,doubles, 100, work);
             singleIndustries.add(singleIndustry);
         }
         rs.close();

@@ -4,13 +4,17 @@ import java.util.List;
 public class Industry {
 
     public static class SingleIndustry {
-        List<Integer> position;
-        List<Double> usage;
-        int ownPosition;
-        int needed = 0;
-        boolean ownOutput = false;
+        private List<Integer> position;
+        private List<Double> usage;
+        private int ownPosition;
+        private int needed = 0;
+        private boolean ownOutput = false;
+        private List<Double> NeedFromOtherIndustries = new ArrayList<>();
+        private List<Integer> PositionFromOtherIndustries = new ArrayList<>();
+        private Double workPerUnit;
+        private Double totalWorkCost = 0.0;
 
-        public SingleIndustry(Integer ownPosition, List<Double> usage, int needed) {
+        public SingleIndustry(Integer ownPosition, List<Double> usage, int needed, Double workPerUnit) {
             List<Integer> positions = new ArrayList<>();
             List<Double> usages = new ArrayList<>();
 
@@ -21,6 +25,7 @@ public class Industry {
                 }
             }
 
+            this.workPerUnit = workPerUnit;
             this.ownPosition = ownPosition;
             this.position = positions;
             this.usage = usages;
@@ -28,6 +33,18 @@ public class Industry {
                 this.needed = needed;
                 ownOutput = true;
             }
+        }
+
+        public Double getWorkCostPerUnit() {
+            return totalWorkCost;
+        }
+
+        public Double getWorkPerUnit() {
+            return workPerUnit;
+        }
+
+        public List<Double> getNeedFromOtherIndustries() {
+            return NeedFromOtherIndustries;
         }
 
         public boolean isOwnOutput() {
@@ -50,18 +67,13 @@ public class Industry {
             return position;
         }
         
-        /** Pseudo Code for later integeration **/
-        
-        List<Double> NeedFromOtherIndustries = new ArrayList<>();
-        List<Integer> PositionFromOtherIndustries = new ArrayList<>();
-        
-        public static void recCalc(Integer FromIndustry, Double Need, List<SingleIndustry> singleIndustries) {
+        public void recCalcNeed(Integer FromIndustry, Double Need, List<SingleIndustry> singleIndustries) {
             if (FromIndustry >= 0) {
-                if (!PositionFromOtherIndustries.contains(FromIndustry) {
+                if (!PositionFromOtherIndustries.contains(FromIndustry)) {
                     PositionFromOtherIndustries.add(FromIndustry);
-                    NeedFromOtherIndustries.add(0);
+                    NeedFromOtherIndustries.add(0.0);
                 }
-                for (int i = 0; i < PositionFromOtherIndustries; i++) {
+                for (int i = 0; i < PositionFromOtherIndustries.size(); i++) {
                     if (PositionFromOtherIndustries.get(i) == FromIndustry) {
                         Double tempNeed = NeedFromOtherIndustries.get(i);
                         tempNeed += Need;
@@ -71,10 +83,24 @@ public class Industry {
             }
             for (int i = 0; i < position.size(); i++) {
                 Double toUse = Need*usage.get(i);
-                if (toUse >= 0.5) singleIndustries.get(position.get(i)).recCalc(ownPosition,toUse,singleIndustries);
+                if (toUse >= 0.2) singleIndustries.get(position.get(i)).recCalcNeed(ownPosition,toUse,singleIndustries);
             }
         }
-        
+
+        public void recCalcWork(Double WorkPerUnit, List<SingleIndustry> singleIndustries) {
+            totalWorkCost = Work(WorkPerUnit, singleIndustries);
+        }
+
+
+        public Double Work(Double WorkPerUnit,List<SingleIndustry> singleIndustries) {
+            Double work = WorkPerUnit;
+            for (int i = 0; i < position.size(); i++) {
+                if (work < 0.05) return 0.05;
+                Double tempWork = usage.get(i)*singleIndustries.get(position.get(i)).Work(usage.get(i)*WorkPerUnit,singleIndustries);
+                work += tempWork;
+            }
+            return work;
+        }
         public int returnFullNeed() {
             int FullNeed = needed;
             for (Double IndustryNeed : NeedFromOtherIndustries) {
@@ -94,12 +120,10 @@ public class Industry {
         }
         return true;
     }
-    
-    /** Pseudo Code for later integeration **/
-
     public static void calcAllIndustries(List<SingleIndustry> singleIndustries) {
         for (SingleIndustry singleIndustry : singleIndustries) {
-            if (singleIndustry.isOwnOutput) singleIndustry.recCalc(-1,(Double) singleIndustry.getNeeded(),singleIndustries);
+            if (singleIndustry.isOwnOutput()) singleIndustry.recCalcNeed(-1,(double) singleIndustry.getNeeded(),singleIndustries);
+            singleIndustry.recCalcWork(singleIndustry.getWorkPerUnit(),singleIndustries);
         }
     }
     
