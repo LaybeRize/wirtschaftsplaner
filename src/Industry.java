@@ -49,6 +49,39 @@ public class Industry {
         public List<Integer> getPosition() {
             return position;
         }
+        
+        /** Pseudo Code for later integeration **/
+        
+        List<Double> NeedFromOtherIndustries = new ArrayList<>();
+        List<Integer> PositionFromOtherIndustries = new ArrayList<>();
+        
+        public static void recCalc(Integer FromIndustry, Double Need, List<SingleIndustry> singleIndustries) {
+            if (FromIndustry >= 0) {
+                if (!PositionFromOtherIndustries.contains(FromIndustry) {
+                    PositionFromOtherIndustries.add(FromIndustry);
+                    NeedFromOtherIndustries.add(0);
+                }
+                for (int i = 0; i < PositionFromOtherIndustries; i++) {
+                    if (PositionFromOtherIndustries.get(i) == FromIndustry) {
+                        Double tempNeed = NeedFromOtherIndustries.get(i);
+                        tempNeed += Need;
+                        NeedFromOtherIndustries.set(i, tempNeed);
+                    }
+                }
+            }
+            for (int i = 0; i < position.size(); i++) {
+                Double toUse = Need*usage.get(i);
+                if (toUse >= 0.5) singleIndustries.get(position.get(i)).recCalc(ownPosition,toUse,singleIndustries);
+            }
+        }
+        
+        public static int returnFullNeed() {
+            int FullNeed = needed;
+            for (Double IndustryNeed : NeedFromOtherIndustries) {
+                FullNeed += Math.ceil(IndustryNeed);
+            }
+        }
+        
     }
 
     public static boolean checkIfIndustryIsFinal (int position, List<SingleIndustry> singleIndustries) {
@@ -60,4 +93,13 @@ public class Industry {
         }
         return true;
     }
+    
+    /** Pseudo Code for later integeration **/
+
+    public static void calcAllIndustries(List<SingleIndustry> singleIndustries) {
+        for (SingleIndustry singleIndustry : singleIndustries) {
+            if (singleIndustry.isOwnOutput) singleIndustry.recCalc(-1,(Double) singleIndustry.getNeeded(),singleIndustries);
+        }
+    }
+    
 }
