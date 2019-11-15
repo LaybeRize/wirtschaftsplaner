@@ -80,6 +80,7 @@ public class Industry {
             for (Double IndustryNeed : NeedFromOtherIndustries) {
                 FullNeed += Math.ceil(IndustryNeed);
             }
+            return FullNeed;
         }
         
     }
