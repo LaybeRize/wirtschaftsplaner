@@ -75,7 +75,7 @@ public class Industry {
             }
         }
         
-        public static int returnFullNeed() {
+        public int returnFullNeed() {
             int FullNeed = needed;
             for (Double IndustryNeed : NeedFromOtherIndustries) {
                 FullNeed += Math.ceil(IndustryNeed);
