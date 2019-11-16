@@ -28,8 +28,8 @@ public class Industry {
     //starts the recursive calculation for the all units/industries/total work costs
     public static void calcAllIndustries(List<Factory> factories) {
         for (Factory factory : factories) {
-            if (factory.isOwnOutput()) factory.recCalcNeed(-1,(double) factory.getNeeded(),factories);
-            factory.recCalcWork(factory.getWorkPerUnit(),factories);
+            if (factory.isOwnOutput() ||factory.isHasNewValues()) factory.recCalcNeed(-1,(double) factory.getNeeded(),factories);
+            if (factory.isHasNewValues()) factory.recCalcWork(factory.getWorkPerUnit(),factories);
         }
     }
 

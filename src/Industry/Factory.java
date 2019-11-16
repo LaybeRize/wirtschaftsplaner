@@ -14,6 +14,8 @@ public class Factory {
     private int needed = 0;
     //true if it produces for the consumer false if it produces only for the industry
     private boolean ownOutput = false;
+    //looks if a change has been made, since the last start up of the program
+    private boolean hasNewValues = false;
     //saves all the requested Output for this Industry from other Industries
     private List<Double> NeedFromOtherFactories = new ArrayList<>();
     //saves the position of the requesting Industries
@@ -49,6 +51,19 @@ public class Factory {
     }
 
     /** return for all relevant values **/
+
+    public void setHasNewValues(boolean hasNewValues) {
+        this.hasNewValues = hasNewValues;
+    }
+
+    public boolean isHasNewValues() {
+        return hasNewValues;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     public Double getWorkCostPerUnit() {
         return totalWorkCost;
     }

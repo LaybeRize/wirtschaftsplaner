@@ -22,6 +22,8 @@ public class Industry {
 
     public void load() {
 
+
+
     }
 
     private void fillExistingParameters() throws Exception{
@@ -157,7 +159,10 @@ public class Industry {
         Connection conn = DriverManager.getConnection("jdbc:sqlite:wirtschaft.db");
         Statement stat = conn.createStatement();
         stat.executeUpdate("drop table if exists Industries;");
-        String string = "create table Industries (I_Abbreviation, Industry);";
+        stat.executeUpdate("drop table if exists TempSave;");
+        String string = "create table tempSave (Abbreviation, InfoType, Info);";
+        stat.executeUpdate(string);
+        string = "create table Industries (I_Abbreviation, Industry);";
         stat.executeUpdate(string);
         conn.close();
     }
