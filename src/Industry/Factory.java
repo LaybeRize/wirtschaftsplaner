@@ -5,11 +5,11 @@ import java.util.List;
 
 public class Factory {
     //position of all the usages for all needed Industry
-    private List<Integer> position;
+    private List<List<Integer>> position;
     //needed Industry Outputs from other Industries
     private List<Double> usage;
     //own Position in the Industry List
-    private int ownPosition;
+    private List<Integer> ownPosition;
     //count of needed Output for this Industry
     private int needed = 0;
     //true if it produces for the consumer false if it produces only for the industry
@@ -19,7 +19,7 @@ public class Factory {
     //saves all the requested Output for this Industry from other Industries
     private List<Double> NeedFromOtherFactories = new ArrayList<>();
     //saves the position of the requesting Industries
-    private List<Integer> PositionFromOtherFactories = new ArrayList<>();
+    private List<List<Integer>> PositionFromOtherFactories = new ArrayList<>();
     //cost of Work in h per unit
     private Double workPerUnit;
     //the total cost in h for every unit
@@ -28,22 +28,12 @@ public class Factory {
     private String name;
 
     //Constructor
-    public Factory(Integer ownPosition, List<Double> usage, int needed, Double workPerUnit, String name) {
-        List<Integer> positions = new ArrayList<>();
-        List<Double> usages = new ArrayList<>();
-
-        for (int i = 0; i < usage.size(); i++) {
-            if (usage.get(i) != 0) {
-                usages.add(usage.get(i));
-                positions.add(i);
-            }
-        }
-
+    public Factory(List<Integer> ownPosition, List<Double> usage,List<List<Integer>> location, int needed, Double workPerUnit, String name) {
         this.name = name;
         this.workPerUnit = workPerUnit;
         this.ownPosition = ownPosition;
-        this.position = positions;
-        this.usage = usages;
+        this.position = location;
+        this.usage = usage;
         if (needed != 0) {
             this.needed = needed;
             ownOutput = true;
@@ -76,7 +66,7 @@ public class Factory {
         return NeedFromOtherFactories;
     }
 
-    public List<Integer> getPositionFromOtherFactories() {
+    public List<List<Integer>> getPositionFromOtherFactories() {
         return PositionFromOtherFactories;
     }
 
@@ -84,7 +74,7 @@ public class Factory {
         return ownOutput;
     }
 
-    public int getOwnPosition() {
+    public List<Integer> getOwnPosition() {
         return ownPosition;
     }
 
@@ -96,15 +86,15 @@ public class Factory {
         return usage;
     }
 
-    public List<Integer> getPosition() {
+    public List<List<Integer>> getPosition() {
         return position;
     }
     /** End **/
 
     //recursive function to calculate the output needed for the industries
-    public void recCalcNeed(Integer FromIndustry, Double Need, List<Factory> factories) {
+    public void recCalcNeed(List<Integer> FromIndustry, Double Need, List<Industry> industries) {
         //inits the save system for data saving
-        if (FromIndustry >= 0) {
+        if (FromIndustry.get(0) >= 0) {
             if (!PositionFromOtherFactories.contains(FromIndustry)) {
                 PositionFromOtherFactories.add(FromIndustry);
                 NeedFromOtherFactories.add(0.0);
@@ -120,24 +110,32 @@ public class Factory {
         //calculates the needed units
         for (int i = 0; i < position.size(); i++) {
             Double toUse = Need * usage.get(i);
-            if (toUse >= 0.2) factories.get(position.get(i)).recCalcNeed(ownPosition, toUse, factories);
+            if (toUse >= 0.2) industries.get(IndustryPosition(i)).factories.get(FactoryPosition(i)).recCalcNeed(ownPosition, toUse, industries);
         }
     }
 
     //calculates the total Work costs in h per Unit via the recursive function Work()
-    public void recCalcWork(Double WorkPerUnit, List<Factory> factories) {
-        totalWorkCost = Work(WorkPerUnit, factories);
+    public void recCalcWork(Double WorkPerUnit, List<Industry> industries) {
+        totalWorkCost = Work(WorkPerUnit, industries);
     }
 
     //recursive function for the calculation of the total Work costs
-    public Double Work(Double WorkPerUnit,List<Factory> factories) {
+    public Double Work(Double WorkPerUnit,List<Industry> industries) {
         Double work = WorkPerUnit;
-        for (int i = 0; i < position.size(); i++) {
+        for (int i = 0; i < usage.size(); i++) {
             if (work < 0.05) return work;
-            Double tempWork = factories.get(position.get(i)).Work(usage.get(i)*WorkPerUnit,factories);
+            Double tempWork = industries.get(IndustryPosition(i)).factories.get(FactoryPosition(i)).Work(usage.get(i)*WorkPerUnit,industries);
             work += tempWork;
         }
         return work;
+    }
+
+    public int IndustryPosition(int position) {
+        return this.position.get(position).get(0);
+    }
+
+    public int FactoryPosition(int position) {
+        return this.position.get(position).get(1);
     }
 
     //returns the combined count of units needed to satisfy all industries

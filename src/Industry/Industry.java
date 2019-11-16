@@ -1,10 +1,12 @@
 package Industry;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.List;
 
 public class Industry {
 
-    private List<Factory> factories;
+    List<Factory> factories;
     private int ownPosition;
     private String name;
 
@@ -14,8 +16,12 @@ public class Industry {
         ownPosition = IndustryPosition;
     }
 
+    public String getName() {
+        return name;
+    }
+
     //checks if the industry produces only for the the costumer or for industry/industry and costumer
-    public static boolean checkIfIndustryIsFinal (int position, List<Factory> factories) {
+    /*public static boolean checkIfIndustryIsFinal (int position, List<Factory> factories) {
         for (Factory factory : factories) {
             List<Integer> integers = factory.getPosition();
             for (Integer specificPosition : integers) {
@@ -23,13 +29,13 @@ public class Industry {
             }
         }
         return true;
-    }
+    }*/
 
     //starts the recursive calculation for the all units/industries/total work costs
-    public static void calcAllIndustries(List<Factory> factories) {
-        for (Factory factory : factories) {
-            if (factory.isOwnOutput() ||factory.isHasNewValues()) factory.recCalcNeed(-1,(double) factory.getNeeded(),factories);
-            if (factory.isHasNewValues()) factory.recCalcWork(factory.getWorkPerUnit(),factories);
+    public void calcAllIndustries(List<Industry> industries) {
+        for (Factory factory : industries.get(ownPosition).factories) {
+            if (factory.isOwnOutput() ||factory.isHasNewValues()) factory.recCalcNeed(Arrays.asList(-1,-1),(double) factory.getNeeded(), industries);
+            if (factory.isHasNewValues()) factory.recCalcWork(factory.getWorkPerUnit(),industries);
         }
     }
 
