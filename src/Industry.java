@@ -2,15 +2,17 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.sql.*;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class Industry {
 
-    private List<List<String>> Industries = new ArrayList<>();
-    private String[] StandardColumns = new String[] {"F_Abbreviation", "Factory", "ExternNeeds"};
-    private String[] StandardColumnsConfig = new String[] {"", "", ""};
+    private List<String> Industries = new ArrayList<>();
+    private String[] StandardColumns = new String[] {"F_Abbreviation", "Factory"};
+    private String[] StandardColumnsConfig = new String[] {"", ""};
 
     public Industry () {
         try {
@@ -22,16 +24,15 @@ public class Industry {
 
     public void load() {
 
-
-
     }
 
     private void fillExistingParameters() throws Exception{
-        for (List<String> strings : readTable("Industries",new String[] {"I_Abbreviation", "Industry"})) {
-            Industries.add(strings);
-        }
-        createIndustryTables(Industries);
-        rewriteFactoryColumns();
+        List<List<String>> industries = Objects.requireNonNull(readTable("_Industries", new String[]{"I_Abbreviation"}));
+        for (List<String> strings : industries) Industries.add(strings.get(0));
+        //dropColumn("I1","F1");
+        //renameColumn("I1","lol", "I3");
+        rewriteIndustryTables();
+        //rewriteFactoryColumns();
     }
 
     private List<List<String>> readTable (String tableName,String[] rowNames) throws Exception{
@@ -41,13 +42,13 @@ public class Industry {
         Class.forName("org.sqlite.JDBC");
         Connection conn = DriverManager.getConnection("jdbc:sqlite:wirtschaft.db");
         Statement stat = conn.createStatement();
-        String query = "select ";
+        StringBuilder query = new StringBuilder("select ");
         for (int i = 0; i < rowNames.length; i++) {
-            if (i + 1 == rowNames.length) query = query + rowNames[i];
-            else query = query + rowNames[i] + ", ";
+            if (i + 1 == rowNames.length) query.append(rowNames[i]);
+            else query.append(rowNames[i]).append(", ");
         }
-        query = query + " from " + tableName + ";";
-        ResultSet rs = stat.executeQuery(query);
+        query.append(" from ").append(tableName).append(";");
+        ResultSet rs = stat.executeQuery(query.toString());
         while (rs.next()) {
             List<String> strings = new ArrayList<>();
             for (String string : rowNames) {
@@ -60,25 +61,166 @@ public class Industry {
         return str;
     }
 
-    private void createIndustryTables (List<List<String>> industries) throws Exception{
+    private void rewriteIndustryTables () throws Exception{
         Class.forName("org.sqlite.JDBC");
         Connection conn = DriverManager.getConnection("jdbc:sqlite:wirtschaft.db");
         Statement stat = conn.createStatement();
-        for (List<String> strings : industries) {
-            String string = "CREATE TABLE IF NOT EXISTS " + strings.get(0) + " (";
-            for (int i = 0; i < StandardColumns.length-1; i++) string = string + StandardColumns[i] + StandardColumnsConfig[i] + ", ";
-            string = string + StandardColumns[StandardColumns.length-1] + StandardColumnsConfig[StandardColumns.length-1] + ");";
-            stat.executeUpdate(string);
+        String allTables = "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'I%' ORDER BY name;";
+        List<String> industries = new ArrayList<>();
+        ResultSet rs = stat.executeQuery(allTables);
+        while (rs.next()) {
+            industries.add(rs.getString("name"));
         }
+        if (Industries.size() != industries.size()) {
+            if (Industries.size() > industries.size()) {
+                for (String strings : Industries) {
+                    StringBuilder string = new StringBuilder("CREATE TABLE IF NOT EXISTS " + strings + " (");
+                    for (int i = 0; i < StandardColumns.length; i++) string.append(StandardColumns[i]).append(StandardColumnsConfig[i]).append(", ");
+                    for (String stringI : Industries) {
+                        if (!stringI.equals(strings)) string.append(stringI).append(" STRING DEFAULT 0, ");
+                    }
+                    string = new StringBuilder(string.toString().substring(0,string.toString().length()-2) + ");");
+                    stat.executeUpdate(string.toString());
+                }
+                for (int i = 0; i < industries.size(); i++) {
+                    for (String string : Industries) {
+                        if (!industries.contains(string)) {
+                            String alterTable = "ALTER TABLE " + industries.get(i) + " ADD '" + string + "' STRING DEFAULT 0;";
+                            stat.executeUpdate(alterTable);
+                        }
+                    }
+                }
+            } else {
+                for (String string : industries) {
+                    if (!Industries.contains(string)) {
+                        stat.executeUpdate("DROP TABLE " + string);
+                    }
+                }
+                for (String stringI : Industries) {
+                    for (String string : industries) {
+                        if (!Industries.contains(string)) {
+                            dropColumn(stringI,string);
+                        }
+                    }
+                }
+                List<String> Industry = new ArrayList<>();
+                for (int i = 0; i < Industries.size(); i++) {
+                    int a = i+1;
+                    String string = "I" + a;
+                    Industry.add(string);
+                }
+                for (String string : Industries) {
+                    for (int i = 0; i < Industry.size(); i++) {
+                        if (!Industries.get(i).equals(Industry.get(i)) && !string.equals(Industries.get(i))) {
+                            renameColumn(string,Industries.get(i),Industry.get(i));
+                        }
+                    }
+                }
+                for (int i = 0; i < Industry.size(); i++) {
+                    if (!Industries.get(i).equals(Industry.get(i))) {
+                        String string = "ALTER TABLE " + Industries.get(i) + " RENAME TO " + Industry.get(i);
+                        stat.executeUpdate(string);
+                    }
+                }
+                for (int i = 0; i < Industry.size(); i++) {
+                    if (!Industries.get(i).equals(Industry.get(i))) {
+                        String string = "UPDATE _Industries SET I_Abbreviation='" + Industry.get(i) + "' WHERE I_Abbreviation='" + Industries.get(i) + "';";
+                        stat.executeUpdate(string);
+                    }
+                }
+            }
+        }
+        rs.close();
         conn.close();
     }
 
-    private void rewriteFactoryColumns() throws Exception{
+    private void dropColumn(String tableName, String columnName) throws Exception{
+        Class.forName("org.sqlite.JDBC");
+        Connection conn = DriverManager.getConnection("jdbc:sqlite:wirtschaft.db");
+        Statement stat = conn.createStatement();
+        StringBuilder string = new StringBuilder("SELECT sql FROM sqlite_master WHERE name = '" + tableName + "';");
+        ResultSet rs = stat.executeQuery(string.toString());
+        String TableColumn = "";
+        while (rs.next()) {
+            TableColumn = rs.getString("sql");
+        }
+        string = new StringBuilder("ALTER TABLE " + tableName + " RENAME TO TempTable");
+        stat.executeUpdate(string.toString());
+        List<String> TableColumns = Arrays.asList(TableColumn.split(","));
+        StringBuilder stringT = new StringBuilder();
+        for (String stringTC : TableColumns) if (!stringTC.contains(columnName)) stringT.append(stringTC).append(",");
+        stringT = new StringBuilder(stringT.toString().substring(0,stringT.toString().length()-1));
+        stat.executeUpdate(stringT.toString());
+        TableColumns = new ArrayList<>();
+        string = new StringBuilder("PRAGMA table_info('" + tableName + "');");
+        rs = stat.executeQuery(string.toString());
+        while (rs.next()) {
+            TableColumns.add(rs.getString("name"));
+        }
+        string = new StringBuilder();
+        for (String table : TableColumns) string.append(table).append(", ");
+        string = new StringBuilder(string.toString().substring(0,string.toString().length()-2));
+        TableColumn = "INSERT INTO " + tableName + " (" + string.toString() + ") SELECT " + string.toString() + " FROM TempTable";
+        stat.executeUpdate(TableColumn);
+        stat.executeUpdate("DROP TABLE TempTable");
+        rs.close();
+        conn.close();
+    }
+
+    private void renameColumn(String tableName, String columnNameOld, String columnNameNew) throws Exception{
+        Class.forName("org.sqlite.JDBC");
+        Connection conn = DriverManager.getConnection("jdbc:sqlite:wirtschaft.db");
+        Statement stat = conn.createStatement();
+        StringBuilder string = new StringBuilder("SELECT sql FROM sqlite_master WHERE name = '" + tableName + "';");
+        ResultSet rs = stat.executeQuery(string.toString());
+        String TableColumn = "";
+        while (rs.next()) {
+            TableColumn = rs.getString("sql");
+        }
+        string = new StringBuilder("ALTER TABLE " + tableName + " RENAME TO TempTable");
+        stat.executeUpdate(string.toString());
+        List<String> TableColumns = Arrays.asList(TableColumn.split(","));
+        StringBuilder stringT = new StringBuilder();
+        for (String stringTC : TableColumns) {
+            if (!stringTC.contains(columnNameOld)) stringT.append(stringTC).append(",");
+            else {
+                String tempString = stringTC.substring(columnNameOld.length()+1);
+                stringT.append(" ").append(columnNameNew).append(tempString).append(",");
+            }
+        }
+        stringT = new StringBuilder(stringT.toString().substring(0,stringT.toString().length()-1));
+        stat.executeUpdate(stringT.toString());
+        TableColumns = new ArrayList<>();
+        string = new StringBuilder("PRAGMA table_info('" + tableName + "');");
+        rs = stat.executeQuery(string.toString());
+        while (rs.next()) {
+            TableColumns.add(rs.getString("name"));
+        }
+        string = new StringBuilder("");
+        for (String table : TableColumns) string.append(table).append(", ");
+        string = new StringBuilder(string.toString().substring(0,string.toString().length()-2));
+        TableColumn = "INSERT INTO " + tableName + " (" + string.toString() + ") SELECT ";
+        string = new StringBuilder();
+        for (String table : TableColumns) {
+            if (!table.equals(columnNameNew)) string.append(table).append(", ");
+            else {
+                string.append(columnNameOld).append(", ");
+            }
+        }
+        string = new StringBuilder(string.toString().substring(0,string.toString().length()-2));
+        TableColumn = TableColumn + string.toString() + " FROM TempTable";
+        stat.executeUpdate(TableColumn);
+        stat.executeUpdate("DROP TABLE TempTable");
+        rs.close();
+        conn.close();
+    }
+
+   /* private void rewriteFactoryColumns() throws Exception{
         List<List<String>> Factories = new ArrayList<>();
         List<String> TableColumns = new ArrayList<>();
         for (List<String> strings : Industries) {
             List<String> string = new ArrayList<>();
-            for (List<String> stringList : readTable(strings.get(0),new String[] {"F_Abbreviation"})) {
+            for (List<String> stringList : Objects.requireNonNull(readTable(strings.get(0), new String[]{"F_Abbreviation"}))) {
                 string.add(stringList.get(0));
             }
             Factories.add(string);
@@ -98,67 +240,67 @@ public class Industry {
         for (int i = 0; i < Factories.size(); i++) {
             if (Factories.get(i).size() + StandardColumns.length != TableColumns.size()) {
                 if (Factories.get(i).size() + StandardColumns.length > TableColumns.size()) {
-                    String string = "ALTER TABLE " + Industries.get(i).get(0) + " RENAME TO TempTable";
-                    stat.executeUpdate(string);
-                    string = "CREATE TABLE IF NOT EXISTS " + Industries.get(i).get(0) + " (";
-                    for (int a = 0; a < StandardColumns.length; a++) string = string + StandardColumns[a] + StandardColumnsConfig[a] + ", ";
-                    for (int a = 0; a < Factories.get(i).size() - 1; a++) string = string + Factories.get(i).get(a) + " STRING DEFAULT 0, ";
-                    string = string + Factories.get(i).get(Factories.get(i).size()-1) + " STRING DEFAULT 0);";
-                    stat.executeUpdate(string);
-                    String oldColumns = "";
-                    for (String s : TableColumns) oldColumns = oldColumns + s + ", ";
-                    oldColumns = oldColumns.substring(0, oldColumns.length()-2);
-                    string = "INSERT INTO " + Industries.get(i).get(0) + " (" + oldColumns + ") SELECT " + oldColumns + " FROM TempTable";
-                    stat.executeUpdate(string);
+                    StringBuilder string = new StringBuilder("ALTER TABLE " + Industries.get(i).get(0) + " RENAME TO TempTable");
+                    stat.executeUpdate(string.toString());
+                    string = new StringBuilder("CREATE TABLE IF NOT EXISTS " + Industries.get(i).get(0) + " (");
+                    for (int a = 0; a < StandardColumns.length; a++) string.append(StandardColumns[a]).append(StandardColumnsConfig[a]).append(", ");
+                    for (int a = 0; a < Factories.get(i).size() - 1; a++) string.append(Factories.get(i).get(a)).append(" STRING DEFAULT 0, ");
+                    string.append(Factories.get(i).get(Factories.get(i).size() - 1)).append(" STRING DEFAULT 0);");
+                    stat.executeUpdate(string.toString());
+                    StringBuilder oldColumns = new StringBuilder();
+                    for (String s : TableColumns) oldColumns.append(s).append(", ");
+                    oldColumns = new StringBuilder(oldColumns.substring(0, oldColumns.length() - 2));
+                    string = new StringBuilder("INSERT INTO " + Industries.get(i).get(0) + " (" + oldColumns + ") SELECT " + oldColumns + " FROM TempTable");
+                    stat.executeUpdate(string.toString());
                     stat.executeUpdate("DROP TABLE TempTable");
                 } else {
-                    String string = "ALTER TABLE " + Industries.get(i).get(0) + " RENAME TO TempTable";
-                    stat.executeUpdate(string);
+                    StringBuilder string = new StringBuilder("ALTER TABLE " + Industries.get(i).get(0) + " RENAME TO TempTable");
+                    stat.executeUpdate(string.toString());
                     for (int a = 0; a < Factories.get(i).size(); a++) {
                         int temp = a+1;
                         String updateTable = "UPDATE TempTable SET F_Abbreviation='F" + temp + "' WHERE F_Abbreviation='" + Factories.get(i).get(a) + "';";
                         stat.executeUpdate(updateTable);
                     }
-                    String oldColumns = "";
-                    for (int a = 0; a < StandardColumns.length;a++) {
-                        oldColumns = oldColumns + StandardColumns[a] + ", ";
+                    StringBuilder oldColumns = new StringBuilder();
+                    for (String standardColumn : StandardColumns) {
+                        oldColumns.append(standardColumn).append(", ");
                     }
-                    string = "CREATE TABLE IF NOT EXISTS " + Industries.get(i).get(0) + " (";
-                    String newColumns = "";
-                    for (int a = 0; a < StandardColumns.length; a++) string = string + StandardColumns[a] + StandardColumnsConfig[a] + ", ";
+                    string = new StringBuilder("CREATE TABLE IF NOT EXISTS " + Industries.get(i).get(0) + " (");
+                    StringBuilder newColumns = new StringBuilder();
+                    for (int a = 0; a < StandardColumns.length; a++) string.append(StandardColumns[a]).append(StandardColumnsConfig[a]).append(", ");
                     for (int a = 0; a < Factories.get(i).size() - 1; a++) {
                         int temp = a+1;
-                        newColumns = newColumns + "F" + temp + " STRING DEFAULT 0, ";
+                        newColumns.append("F").append(temp).append(" STRING DEFAULT 0, ");
                     }
-                    newColumns = newColumns + "F"+ Factories.get(i).size() + " STRING DEFAULT 0);";
-                    string = string + newColumns;
-                    stat.executeUpdate(string);
-                    newColumns = "(";
-                    for (int a = 0; a < StandardColumns.length; a++) newColumns = newColumns + StandardColumns[a] + ", ";
+                    newColumns.append("F").append(Factories.get(i).size()).append(" STRING DEFAULT 0);");
+                    string.append(newColumns);
+                    stat.executeUpdate(string.toString());
+                    newColumns = new StringBuilder("(");
+                    for (String standardColumn : StandardColumns) newColumns.append(standardColumn).append(", ");
                     for (int a = 0; a < Factories.get(i).size() - 1; a++) {
                         int temp = a+1;
-                        newColumns = newColumns + "F" + temp + ", ";
+                        newColumns.append("F").append(temp).append(", ");
                     }
-                    newColumns = newColumns + "F"+ Factories.get(i).size() + ")";
+                    newColumns.append("F").append(Factories.get(i).size()).append(")");
                     int b = 0;
                     for (String str : Factories.get(i)) {
-                        oldColumns = oldColumns + str + ", ";
+                        oldColumns.append(str).append(", ");
                     }
-                    oldColumns = oldColumns.substring(0, oldColumns.length()-2);
-                    string = "INSERT INTO " + Industries.get(i).get(0) + " " + newColumns + " SELECT " + oldColumns + " FROM TempTable";
-                    stat.executeUpdate(string);
+                    oldColumns = new StringBuilder(oldColumns.substring(0, oldColumns.length() - 2));
+                    string = new StringBuilder("INSERT INTO " + Industries.get(i).get(0) + " " + newColumns + " SELECT " + oldColumns + " FROM TempTable");
+                    stat.executeUpdate(string.toString());
                     stat.executeUpdate("DROP TABLE TempTable");
                 }
             }
         }
         conn.close();
-    }
+    }*/
 
     public void firstInstallation () throws Exception {
         Class.forName("org.sqlite.JDBC");
         Connection conn = DriverManager.getConnection("jdbc:sqlite:wirtschaft.db");
         Statement stat = conn.createStatement();
-        stat.executeUpdate("drop table if exists Industries;");
+        stat.executeUpdate("drop table if exists _Industries;");
         stat.executeUpdate("drop table if exists TempSave;");
         String string = "create table tempSave (Abbreviation, InfoType, Info);";
         stat.executeUpdate(string);
