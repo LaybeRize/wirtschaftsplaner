@@ -14,7 +14,7 @@ public class IndustryManager {
     private List<String> _Industries = new ArrayList<>();
     private List<Industry> Industries = new ArrayList<>();
     private String[] StandardColumns = new String[] {"F_Abbreviation", "Factory", "Needed", "WorkPerUnit"};
-    private String[] StandardColumnsConfig = new String[] {"", "", " NOT NULL STRING 0", " NOT NULL STRING 0"};
+    private String[] StandardColumnsConfig = new String[] {"", "", " STRING NOT NULL DEFAULT 0", " STRING NOT NULL DEFAULT 0"};
 
     public IndustryManager () {
         try {
@@ -44,7 +44,7 @@ public class IndustryManager {
                     Class.forName("org.sqlite.JDBC");
                     Connection conn = DriverManager.getConnection("jdbc:sqlite:wirtschaft.db");
                     Statement stat = conn.createStatement();
-                    String allTables = "SELECT name FROM " + string + " WHERE F_Abbreviation='" + factory + "';";
+                    String allTables = "SELECT * FROM " + string + " WHERE F_Abbreviation='" + factory + "';";
                     ResultSet rs = stat.executeQuery(allTables);
                     name = rs.getString("Factory");
                     needed = Integer.parseInt(rs.getString("Needed"));
@@ -61,12 +61,12 @@ public class IndustryManager {
                         String Input = "";
                         if (!string.equals(industryS)) {
                             Input = rs.getString(industryS);
-                        }
-                        if (!Input.equals("0")) {
-                            List<String> stringList = Arrays.asList(Input.split(":"));
-                            for (String Info : stringList) {
-                                position.add(Arrays.asList(Integer.parseInt(industryS.substring(1)), Integer.parseInt(Arrays.asList(Info.split("-")).get(0).substring(1))));
-                                usage.add(Double.parseDouble(Arrays.asList(Info.split("-")).get(1)));
+                            if (!Input.equals("0")) {
+                                List<String> stringList = Arrays.asList(Input.split(":"));
+                                for (String Info : stringList) {
+                                    position.add(Arrays.asList(Integer.parseInt(industryS.substring(1)), Integer.parseInt(Arrays.asList(Info.split("-")).get(0).substring(1))));
+                                    usage.add(Double.parseDouble(Arrays.asList(Info.split("-")).get(1)));
+                                }
                             }
                         }
                     }
@@ -74,7 +74,7 @@ public class IndustryManager {
                 }
                 String name = "";
                 for (List<String> strings : industries) if (strings.get(0).equals(string)) name = strings.get(1);
-                Industries.add(new Industry(factoryList,Integer.getInteger(string.substring(1)),name));
+                Industries.add(new Industry(factoryList,Integer.parseInt(string.substring(1)),name));
             }
         } catch (Exception e) {
             e.printStackTrace();
