@@ -14,8 +14,8 @@ public class MainClass {
     }
 
     private static void MainClass() {
-        Industry industry = new Industry();
-        industry.load();
+        IndustryManager industryManager = new IndustryManager();
+        industryManager.load();
     }
 
     private static String generateUsage() {
