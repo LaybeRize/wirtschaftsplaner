@@ -131,11 +131,11 @@ public class Factory {
     }
 
     public int IndustryPosition(int position) {
-        return this.position.get(position).get(0);
+        return this.position.get(position).get(0) - 1;
     }
 
     public int FactoryPosition(int position) {
-        return this.position.get(position).get(1);
+        return this.position.get(position).get(1) - 1;
     }
 
     //returns the combined count of units needed to satisfy all industries

@@ -20,6 +20,16 @@ public class Industry {
         return name;
     }
 
+    public int getOwnPosition() {
+        return ownPosition;
+    }
+
+    public void printAllFactories () {
+        for (Factory factory : factories) {
+            System.out.println("F"+factory.getOwnPosition().get(1) + ": " + factory.getName());
+        }
+    }
+
     //checks if the industry produces only for the the costumer or for industry/industry and costumer
     /*public static boolean checkIfIndustryIsFinal (int position, List<Factory> factories) {
         for (Factory factory : factories) {

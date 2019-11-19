@@ -17,6 +17,23 @@ public class IndustryManager {
     private String[] StandardColumnsConfig = new String[] {"", "", " STRING NOT NULL DEFAULT 0", " STRING NOT NULL DEFAULT 0"};
 
     public IndustryManager () {
+    }
+
+    public void printAllIndustryNames () {
+        for (Industry industry : Industries) {
+            System.out.println("I" + industry.getOwnPosition() + ": " + industry.getName());
+        }
+    }
+
+    public Industry getSpecificIndustry (String Name) {
+        for (Industry industry : Industries) {
+            String temp = "i"+industry.getOwnPosition();
+            if (Name.equals(temp)) return industry;
+        }
+        return null;
+    }
+
+    public void updateDatabase() {
         try {
             fillExistingParameters();
         } catch (Exception e) {
