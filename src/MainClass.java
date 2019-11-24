@@ -16,6 +16,10 @@ public class MainClass {
         MainClass();
     }
 
+    private static String help;
+    private static String Industry = "";
+    private static String factory = "";
+
     private static void MainClass() {
         IndustryManager industryManager = new IndustryManager();
         industryManager.updateDatabase();
@@ -35,12 +39,16 @@ public class MainClass {
                 case "help":
                     help = "List of commands:\n" +
                             "help | shows this text\n" +
-                            "Industry -help | prints the list commands for industry\n" +
+                            "Industry -help | prints the list of commands for industry\n" +
+                            "Factory -help | prints the list of commands for factory\n" +
                             "end | ends the program";
                     System.out.println(help);
                     break;
                 case "industry":
                     IndustryManagement(command,industryManager);
+                    break;
+                case "factory":
+                    FactoryManagment(command,industryManager);
                     break;
                 case "end":
                     run = false;
@@ -52,27 +60,107 @@ public class MainClass {
         }
     }
 
+    private static void FactoryManagment (List<String> command, IndustryManager industryManager) {
+        try {
+            switch (command.get(1)) {
+                case "-help":
+                    help = "List of commands for factory:\n" +
+                            "-help | shows this text\n" +
+                            "-list | lists all Factories with there abbreviation\n" +
+                            "call <Factory> | enters the factory mode for the factory called\n" +
+                            "-info | can only be called when an factory is already called\n" +
+                            "<Factory> refers to the abbreviation of the factory";
+                    System.out.println(help);
+                    break;
+                case "-list":
+                    if (Industry.equals("")) System.out.println("Please call a valid Industry first");
+                    else {
+                        Industry industry = industryManager.getSpecificIndustry(Industry);
+                        System.out.println("ID: I" + industry.getOwnPosition() + "\nName: " + industry.getName() + "\nAll Factories:");
+                        industry.printAllFactories();
+                    }
+                    break;
+                case "call":
+                    if (Industry.equals("")) System.out.println("Please call a valid Industry first");
+                    else {
+                        try {
+                            if (industryManager.getSpecificFactory(industryManager.getSpecificIndustry(Industry), command.get(2)) != null) factory = command.get(2);
+                            else System.out.println("Please enter a valid factory");
+                        } catch (Exception e) {
+                            System.out.println("Please enter a factory after 'call'");
+                        }
+                    }
+                    break;
+                case "-info":
+                    if (Industry.equals("")) System.out.println("Please call a valid Industry first");
+                    else {
+                        if(factory.equals("")) System.out.println("Please call a valid Factory first");
+                        else {
+                            Factory RealFactory = industryManager.getSpecificFactory(industryManager.getSpecificIndustry(Industry), factory);
+                            DecimalFormat f = new DecimalFormat("#.##");
+                            String str = "ID: I" + RealFactory.getOwnPosition().get(0) + " F" + RealFactory.getOwnPosition().get(1) + "\n" +
+                                    "Name: " + RealFactory.getName() + "\n" +
+                                    "Information:\n" +
+                                    "All Production: " + RealFactory.returnFullNeed() + "\n" +
+                                    "Production for Consumers: " + RealFactory.getNeeded() + "\n" +
+                                    "Cost per Unit for Factory: " + RealFactory.getWorkPerUnit() + "h\n" +
+                                    "Total Cost for Unit: " + RealFactory.getWorkCostPerUnit() + "h";
+                            System.out.println(str);
+                            List<List<Integer>> pos = RealFactory.getPositionFromOtherFactories();
+                            List<Double> use = RealFactory.getNeedFromOtherFactories();
+                            if (use.size() > 0) {
+                                System.out.println("Production for other Industries/Factories:\n\t|----");
+                                for (int i = 0; i < use.size(); i++) {
+                                    System.out.println("\t|ID: I" + pos.get(i).get(0) + " F" + pos.get(i).get(1));
+                                    System.out.println("\t|Production: " + f.format(use.get(i)));
+                                    System.out.println("\t|----");
+                                }
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    System.out.println("This command is not recognized. Type 'Factory -help' for all commands.");
+                    break;
+            }
+        } catch (Exception e) {
+            System.out.println("This command is not recognized. Type 'Factory -help' for all commands.");
+        }
+    }
+
     private static void IndustryManagement (List<String> command, IndustryManager industryManager) {
-        String help;
         try {
             switch (command.get(1)) {
                 case "-help":
                     help = "List of commands for industry:\n" +
                             "-help | shows this text\n" +
                             "-list | lists all Industries with there abbreviation\n" +
-                            "-get <Industry> | prints all the Factories that are associated with the Industry.\n" +
+                            "call <Industry> | enters the industry mode for the industry called\n" +
+                            "-info | can only be called when an industry is already called\n" +
                             "<Industry> refers to the abbreviation of the industry";
                     System.out.println(help);
                     break;
                 case "-list":
                     industryManager.printAllIndustryNames();
                     break;
-                case "-get":
+                case "call":
                     try {
-                        industryManager.getSpecificIndustry(command.get(2)).printAllFactories();
+                        if (industryManager.getSpecificIndustry(command.get(2)) != null) Industry = command.get(2);
+                        else System.out.println("Please enter a valid Industry");
                     } catch (Exception e) {
-                        System.out.println("Industry does not exist or wasn't correctly written");
+                        System.out.println("Please enter a Industry after 'call'");
                     }
+                    break;
+                case "-info":
+                    if (Industry.equals("")) {
+                        System.out.println("Please call a industry first");
+                        break;
+                    }
+                    Industry industry = industryManager.getSpecificIndustry(Industry);
+                    StringBuilder stringBuilder = new StringBuilder("ID: I");
+                    stringBuilder.append(industry.getOwnPosition()).append("\nName: ").append(industry.getName()).append("\nAll Factories:");
+                    System.out.println(stringBuilder.toString());
+                    industry.printAllFactories();
                     break;
                 default:
                     System.out.println("This command is not recognized. Type 'Industry -help' for all commands.");

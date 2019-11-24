@@ -3,6 +3,7 @@ package Industry;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
+import Industry.Factory;
 
 public class Industry {
 
@@ -24,9 +25,14 @@ public class Industry {
         return ownPosition;
     }
 
+    public List<Factory> getFactories() {
+        return factories;
+    }
+
     public void printAllFactories () {
+        System.out.println("\t|----");
         for (Factory factory : factories) {
-            System.out.println("F"+factory.getOwnPosition().get(1) + ": " + factory.getName());
+            System.out.println("\t|ID: F"+factory.getOwnPosition().get(1) + "\n\t|Name: " + factory.getName() + "\n\t|----");
         }
     }
 
@@ -44,8 +50,8 @@ public class Industry {
     //starts the recursive calculation for the all units/industries/total work costs
     public void calcAllIndustries(List<Industry> industries) {
         for (Factory factory : industries.get(ownPosition).factories) {
-            if (factory.isOwnOutput() ||factory.isHasNewValues()) factory.recCalcNeed(Arrays.asList(-1,-1),(double) factory.getNeeded(), industries);
-            if (factory.isHasNewValues()) factory.recCalcWork(factory.getWorkPerUnit(),industries);
+            if (factory.isOwnOutput() ||factory.hasNewValues()) factory.recCalcNeed(Arrays.asList(-1,-1),(double) factory.getNeeded(), industries);
+            if (factory.hasNewValues()) factory.recCalcWork(factory.getWorkPerUnit(),industries);
         }
     }
 

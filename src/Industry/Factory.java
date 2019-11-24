@@ -15,11 +15,11 @@ public class Factory {
     //true if it produces for the consumer false if it produces only for the industry
     private boolean ownOutput = false;
     //looks if a change has been made, since the last start up of the program
-    private boolean hasNewValues = false;
+    private boolean newValues = true;
     //saves all the requested Output for this Industry from other Industries
-    private List<Double> NeedFromOtherFactories = new ArrayList<>();
+    private List<Double> needFromOtherFactories = new ArrayList<>();
     //saves the position of the requesting Industries
-    private List<List<Integer>> PositionFromOtherFactories = new ArrayList<>();
+    private List<List<Integer>> positionFromOtherFactories = new ArrayList<>();
     //cost of Work in h per unit
     private Double workPerUnit;
     //the total cost in h for every unit
@@ -42,12 +42,12 @@ public class Factory {
 
     /** return for all relevant values **/
 
-    public void setHasNewValues(boolean hasNewValues) {
-        this.hasNewValues = hasNewValues;
+    public void setNewValues(boolean NewValues) {
+        this.newValues = NewValues;
     }
 
-    public boolean isHasNewValues() {
-        return hasNewValues;
+    public boolean hasNewValues() {
+        return newValues;
     }
 
     public String getName() {
@@ -63,11 +63,11 @@ public class Factory {
     }
 
     public List<Double> getNeedFromOtherFactories() {
-        return NeedFromOtherFactories;
+        return needFromOtherFactories;
     }
 
     public List<List<Integer>> getPositionFromOtherFactories() {
-        return PositionFromOtherFactories;
+        return positionFromOtherFactories;
     }
 
     public boolean isOwnOutput() {
@@ -95,22 +95,22 @@ public class Factory {
     public void recCalcNeed(List<Integer> FromIndustry, Double Need, List<Industry> industries) {
         //inits the save system for data saving
         if (FromIndustry.get(0) >= 0) {
-            if (!PositionFromOtherFactories.contains(FromIndustry)) {
-                PositionFromOtherFactories.add(FromIndustry);
-                NeedFromOtherFactories.add(0.0);
+            if (!positionFromOtherFactories.contains(FromIndustry)) {
+                positionFromOtherFactories.add(FromIndustry);
+                needFromOtherFactories.add(0.0);
             }
-            for (int i = 0; i < PositionFromOtherFactories.size(); i++) {
-                if (PositionFromOtherFactories.get(i) == FromIndustry) {
-                    Double tempNeed = NeedFromOtherFactories.get(i);
+            for (int i = 0; i < positionFromOtherFactories.size(); i++) {
+                if (positionFromOtherFactories.get(i) == FromIndustry) {
+                    Double tempNeed = needFromOtherFactories.get(i);
                     tempNeed += Need;
-                    NeedFromOtherFactories.set(i, tempNeed);
+                    needFromOtherFactories.set(i, tempNeed);
                 }
             }
         }
         //calculates the needed units
         for (int i = 0; i < position.size(); i++) {
             Double toUse = Need * usage.get(i);
-            if (toUse >= 0.2) industries.get(IndustryPosition(i)).factories.get(FactoryPosition(i)).recCalcNeed(ownPosition, toUse, industries);
+            if (toUse >= 1) industries.get(IndustryPosition(i)).factories.get(FactoryPosition(i)).recCalcNeed(ownPosition, toUse, industries);
         }
     }
 
@@ -141,7 +141,7 @@ public class Factory {
     //returns the combined count of units needed to satisfy all industries
     public int returnFullNeed() {
         int FullNeed = needed;
-        for (Double IndustryNeed : NeedFromOtherFactories) {
+        for (Double IndustryNeed : needFromOtherFactories) {
             FullNeed += Math.ceil(IndustryNeed);
         }
         return FullNeed;
