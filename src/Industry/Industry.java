@@ -1,9 +1,7 @@
 package Industry;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
-import Industry.Factory;
 
 public class Industry {
 

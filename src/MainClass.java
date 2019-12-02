@@ -1,5 +1,3 @@
-import java.io.File;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,30 +8,28 @@ import Industry.*;
 
 public class MainClass {
 
-    public static int industries = 10;
-
     public static void main(String[] args) {
         MainClass();
     }
 
-    private static String help;
+    private static String helper;
     private static String Industry = "";
     private static String factory = "";
+    private static IndustryManager industryManager;
+    private static List<String> command;
 
     private static void MainClass() {
-        IndustryManager industryManager = new IndustryManager();
-        industryManager.updateDatabase();
-        industryManager.load();
+        industryManager = new IndustryManager(false);
 
-        SystemManagment(industryManager);
+        SystemManagment();
     }
 
-    private static void SystemManagment (IndustryManager industryManager) {
+    private static void SystemManagment () {
         Boolean run = true;
         Scanner input = new Scanner(System.in);
         System.out.println("Type 'help' for a list of commands");
         while (run) {
-            List<String> command = Arrays.asList(input.nextLine().toLowerCase().split(" "));
+            command = Arrays.asList(input.nextLine().toLowerCase().split(" "));
             String help;
             switch (command.get(0)) {
                 case "help":
@@ -45,10 +41,10 @@ public class MainClass {
                     System.out.println(help);
                     break;
                 case "industry":
-                    IndustryManagement(command,industryManager);
+                    IndustryManagement();
                     break;
                 case "factory":
-                    FactoryManagment(command,industryManager);
+                    FactoryManagment();
                     break;
                 case "end":
                     run = false;
@@ -60,17 +56,17 @@ public class MainClass {
         }
     }
 
-    private static void FactoryManagment (List<String> command, IndustryManager industryManager) {
+    private static void FactoryManagment () {
         try {
             switch (command.get(1)) {
                 case "-help":
-                    help = "List of commands for factory:\n" +
+                    helper = "List of commands for factory:\n" +
                             "-help | shows this text\n" +
                             "-list | lists all Factories with there abbreviation\n" +
                             "call <Factory> | enters the factory mode for the factory called\n" +
                             "-info | can only be called when an factory is already called\n" +
                             "<Factory> refers to the abbreviation of the factory";
-                    System.out.println(help);
+                    System.out.println(helper);
                     break;
                 case "-list":
                     if (Industry.equals("")) System.out.println("Please call a valid Industry first");
@@ -128,17 +124,17 @@ public class MainClass {
         }
     }
 
-    private static void IndustryManagement (List<String> command, IndustryManager industryManager) {
+    private static void IndustryManagement () {
         try {
             switch (command.get(1)) {
                 case "-help":
-                    help = "List of commands for industry:\n" +
+                    helper = "List of commands for industry:\n" +
                             "-help | shows this text\n" +
                             "-list | lists all Industries with there abbreviation\n" +
                             "call <Industry> | enters the industry mode for the industry called\n" +
                             "-info | can only be called when an industry is already called\n" +
                             "<Industry> refers to the abbreviation of the industry";
-                    System.out.println(help);
+                    System.out.println(helper);
                     break;
                 case "-list":
                     industryManager.printAllIndustryNames();
@@ -169,32 +165,5 @@ public class MainClass {
         } catch (Exception e) {
             System.out.println("This command is not recognized. Type 'Industry -help' for all commands.");
         }
-    }
-
-    private static String generateUsage() {
-        double x = Math.random();
-        int i = (int) (x*100);
-        x = ((double) i)/100;
-        return "" + x;
-    }
-
-    private static List<String> generateAllPositions() {
-        List<String> strings = new ArrayList<>();
-        strings.add(generatePosition());
-        strings.add(generatePosition());
-        while (strings.get(0).equals(strings.get(1))) {
-            strings.set(1, generatePosition());
-        }
-        strings.add(generatePosition());
-        while (strings.get(0).equals(strings.get(2)) || strings.get(1).equals(strings.get(2))) {
-            strings.set(2, generatePosition());
-        }
-        return strings;
-    }
-
-    private static String generatePosition () {
-        double x = Math.random();
-        int i = (int) (industries*x) + 1;
-        return "" + i;
     }
 }
