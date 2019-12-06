@@ -20,7 +20,7 @@ public class MainClass {
 
     private static void MainClass() {
         industryManager = new IndustryManager(false);
-
+        industryManager.startManager();
         SystemManagment();
     }
 
@@ -32,6 +32,9 @@ public class MainClass {
             command = Arrays.asList(input.nextLine().toLowerCase().split(" "));
             String help;
             switch (command.get(0)) {
+                case "print":
+                    industryManager.getSpecificFactory(industryManager.getSpecificIndustry(command.get(1)), command.get(2)).printAllStrings();
+                    break;
                 case "help":
                     help = "List of commands:\n" +
                             "help | shows this text\n" +
@@ -100,7 +103,7 @@ public class MainClass {
                                     "All Production: " + RealFactory.returnFullNeed() + "\n" +
                                     "Production for Consumers: " + RealFactory.getNeeded() + "\n" +
                                     "Cost per Unit for Factory: " + RealFactory.getWorkPerUnit() + "h\n" +
-                                    "Total Cost for Unit: " + RealFactory.getWorkCostPerUnit() + "h";
+                                    "Total Cost for Unit: " + f.format(RealFactory.getWorkCostPerUnit()) + "h";
                             System.out.println(str);
                             List<List<Integer>> pos = RealFactory.getPositionFromOtherFactories();
                             List<Double> use = RealFactory.getNeedFromOtherFactories();

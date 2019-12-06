@@ -15,10 +15,13 @@ public class IndustryManager {
         }
     }
 
-    public void start() {
+    public void startManager() {
         IndustryReader industryReader = new IndustryReader();
         industryReader.updateDatabase();
         industries = industryReader.load();
+        for (Industry industry : industries) {
+            industry.calcAllIndustries(industries);
+        }
     }
 
     public void printAllIndustryNames () {

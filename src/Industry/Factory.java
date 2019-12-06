@@ -1,5 +1,7 @@
 package Industry;
 
+import java.awt.image.AreaAveragingScaleFilter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +22,10 @@ public class Factory {
     private List<Double> needFromOtherFactories = new ArrayList<>();
     //saves the position of the requesting Industries
     private List<List<Integer>> positionFromOtherFactories = new ArrayList<>();
+    //saves all the requested Work for other Industries from this Industry
+    private String FactoryFrom = "";
+    private String FactoryTo = "";
+    private String WorkString = "";
     //cost of Work in h per unit
     private Double workPerUnit;
     //the total cost in h for every unit
@@ -116,18 +122,104 @@ public class Factory {
 
     //calculates the total Work costs in h per Unit via the recursive function Work()
     public void recCalcWork(Double WorkPerUnit, List<Industry> industries) {
-        totalWorkCost = Work(WorkPerUnit, industries);
+        StringDouble work = Work(WorkPerUnit, industries, name);
+        totalWorkCost = work.work;
+        work.correct(WorkPerUnit);
+        if (FactoryTo.equals("")) {
+            work.checkDoubles(name);
+            for (String string : work.NameFrom) {
+                FactoryFrom = FactoryFrom + '"' + string + '"' + ",";
+            }
+            for (String string : work.NameTo) {
+                FactoryTo = FactoryTo + '"' + string + '"' + ",";
+            }
+            for (Integer integer : work.Work) {
+                WorkString = WorkString + integer.toString() + ",";
+            }
+            FactoryFrom = FactoryFrom.substring(0, FactoryFrom.length() - 1);
+            FactoryTo = FactoryTo.substring(0, FactoryTo.length() - 1);
+            WorkString = WorkString.substring(0, WorkString.length() - 1);
+        }
+    }
+
+    public void printAllStrings() {
+        System.out.println("  source=c(" + FactoryFrom + "),");
+        System.out.println("  target=c(" + FactoryTo + "),");
+        System.out.println("  value=c(" + WorkString + ")");
     }
 
     //recursive function for the calculation of the total Work costs
-    public Double Work(Double WorkPerUnit,List<Industry> industries) {
-        Double work = WorkPerUnit;
+    public StringDouble Work(Double WorkPerUnit,List<Industry> industries, String nameTo) {
+        StringDouble work = new StringDouble();
+        work.work = WorkPerUnit;
         for (int i = 0; i < usage.size(); i++) {
-            if (work < 0.05) return work;
-            Double tempWork = industries.get(IndustryPosition(i)).factories.get(FactoryPosition(i)).Work(usage.get(i)*WorkPerUnit,industries);
-            work += tempWork;
+            if (work.work < 0.05) return work;
+            StringDouble tempWork = industries.get(IndustryPosition(i)).factories.get(FactoryPosition(i)).Work(usage.get(i)*WorkPerUnit,industries, name);
+            work.addAll(tempWork);
         }
+        work.add(name, nameTo, work.work);
         return work;
+    }
+
+    public class StringDouble {
+        public Double work;
+        List<String> NameFrom = new ArrayList<>();
+        List<String> NameTo = new ArrayList<>();
+        List<Integer> Work = new ArrayList<>();
+
+        public StringDouble() {
+
+        }
+
+        public void checkDoubles(String Name) {
+            for (int i = 0; i < NameFrom.size(); i++) {
+                if (NameFrom.get(i).equals(Name)) NameFrom.set(i, "own");
+            }
+            List<String> FutureFrom = new ArrayList<>();
+            List<String> FutureTo = new ArrayList<>();
+            List<Integer> FutureWork = new ArrayList<>();
+            for (int i = 0; i < NameFrom.size(); i++) {
+                boolean exist = false;
+                int pos = 0;
+                for (int a = 0; a < FutureFrom.size(); a++) {
+                    if (FutureFrom.get(a).equals(NameFrom.get(i)) && FutureTo.get(a).equals(NameTo.get(i))) {
+                        exist = true;
+                        pos = a;
+                    }
+                }
+                if (exist) {
+                    FutureWork.set(pos, FutureWork.get(pos) + Work.get(i));
+                } else {
+                    FutureFrom.add(NameFrom.get(i));
+                    FutureTo.add(NameTo.get(i));
+                    FutureWork.add(Work.get(i));
+                }
+            }
+            NameFrom = FutureFrom;
+            NameTo = FutureTo;
+            Work = FutureWork;
+        }
+
+        public void addAll(StringDouble stringDouble) {
+            work += stringDouble.work;
+            NameFrom.addAll(stringDouble.NameFrom);
+            NameTo.addAll(stringDouble.NameTo);
+            Work.addAll(stringDouble.Work);
+        }
+
+        public void correct(Double work) {
+            work *= 100;
+            Long workR = Math.round(work);
+            Work.set(Work.size()-1, Math.toIntExact(workR));
+        }
+
+        public void add(String nameFrom, String nameTo, Double work) {
+            NameFrom.add(nameFrom);
+            NameTo.add(nameTo);
+            work *= 100;
+            Long workR = Math.round(work);
+            Work.add(Math.toIntExact(workR));
+        }
     }
 
     public int IndustryPosition(int position) {
