@@ -101,7 +101,7 @@ namespace ExelManipulator
             wb.SaveAs(path);
         }
 
-        public void ChangeText(int row, int line, string font, int size, bool bold, bool italic, bool underline, XlRgbColor color)
+        public void ChangeText(int row, int line, string font, int size, bool bold, bool italic, bool underline)
         {
             Range range = ws.Range[ws.Cells[++row, ++line],ws.Cells[row,line]];
             range.Font.Name = font;
@@ -109,6 +109,11 @@ namespace ExelManipulator
             range.Font.Bold = bold;
             range.Font.Italic = italic;
             range.Font.Underline = underline;
+        }
+
+        public void changeColor(int startRow, int startLine, int endRow, int EndLine, XlRgbColor color)
+        {
+            Range range = ws.Range[ws.Cells[++startRow, ++startLine], ws.Cells[++endRow, ++EndLine]];
             range.Interior.Color = color;
         }
 
