@@ -1,0 +1,10 @@
+L:\AndereDokumente\ExelManipulator\ExelManipulator\ExelManipulator\bin\Debug\ExelManipulator.exe.config
+L:\AndereDokumente\ExelManipulator\ExelManipulator\ExelManipulator\bin\Debug\ExelManipulator.exe
+L:\AndereDokumente\ExelManipulator\ExelManipulator\ExelManipulator\bin\Debug\ExelManipulator.pdb
+L:\AndereDokumente\ExelManipulator\ExelManipulator\ExelManipulator\obj\Debug\ExelManipulator.csprojResolveAssemblyReference.cache
+L:\AndereDokumente\ExelManipulator\ExelManipulator\ExelManipulator\obj\Debug\ExelManipulator.csproj.ResolveComReference.cache
+L:\AndereDokumente\ExelManipulator\ExelManipulator\ExelManipulator\obj\Debug\ExelManipulator.Properties.Resources.resources
+L:\AndereDokumente\ExelManipulator\ExelManipulator\ExelManipulator\obj\Debug\ExelManipulator.csproj.GenerateResource.Cache
+L:\AndereDokumente\ExelManipulator\ExelManipulator\ExelManipulator\obj\Debug\ExelManipulator.exe
+L:\AndereDokumente\ExelManipulator\ExelManipulator\ExelManipulator\obj\Debug\ExelManipulator.pdb
+L:\AndereDokumente\ExelManipulator\ExelManipulator\ExelManipulator\obj\Debug\ExelManipulator.Form1.resources
