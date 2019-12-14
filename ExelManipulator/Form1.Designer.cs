@@ -90,7 +90,7 @@
             this.Controls.Add(this.lbl_dateiname);
             this.Controls.Add(this.txtB_Dateiname);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "Excel Manipulator";
             this.ResumeLayout(false);
             this.PerformLayout();
 

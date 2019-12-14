@@ -21,8 +21,6 @@ namespace ExelManipulator
             InitializeComponent();
         }
 
-        
-
         private void btn_createFile_Click(object sender, EventArgs e)
         {
             calc.CreateFile(txtB_Dateiname.Text);
@@ -30,9 +28,7 @@ namespace ExelManipulator
 
         private void btn_openfile_Click(object sender, EventArgs e)
         {
-            //OpenFile(txtB_Dateiname.Text);
-            calc.OpenFormater(lbl_test);
-            
+            calc.OpenFormater(lbl_test); 
         }
     }
 }

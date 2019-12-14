@@ -24,10 +24,8 @@ namespace ExelManipulator
 
 
         string[,] AllInfos;
-        string[] color;
         string[,] format;
-        double[,] loadedNumbers;
-
+        double[,] toLoad;
 
         public void OpenFormater(System.Windows.Forms.Label lbl_test)
         {
@@ -36,11 +34,13 @@ namespace ExelManipulator
             {
                 int month = (int)excel.ReadCellD(0, 0);
                 int year = (int)excel.ReadCellD(0, 1);
+                bool newFile = false;
                 Excel ReadFrom;
                 if (month == 1)
                 {
                     int temp = year - 1;
                     ReadFrom = new Excel(temp.ToString(), 12);
+                    newFile = true;
                 }
                 else
                 {
@@ -55,19 +55,21 @@ namespace ExelManipulator
                 lbl_test.Text = row.ToString() + "|" + line.ToString();
                 AllInfos = new string[row, line];
                 format = new string[row, line];
-                loadedNumbers = new double[row, line];
+                toLoad = new double[row, line];
                 for (int i = 0; i < row; i++)
                 {
                     for (int a = 0; a < line; a++)
                     {
                         AllInfos[i, a] = excel.ReadCellS(i, a);
-                        if (AllInfos[i, a].Equals("load")) loadedNumbers[i, a] = ReadFrom.ReadCellD(i, a);
                     }
                 }
                 excel.changeWorksheet(2);
                 for (int i = 0; i < row; i++)
                 {
-                    color[i] = excel.ReadCellS(i, 0);
+                    for (int a = 0; a < line; a++)
+                    {
+                        format[i, a] = excel.ReadCellS(i, a);
+                    }
                 }
                 bool AllFormats = true;
                 int counter = 0;
