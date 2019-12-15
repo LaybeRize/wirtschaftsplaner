@@ -28,7 +28,15 @@ namespace ExelManipulator
 
         private void btn_openfile_Click(object sender, EventArgs e)
         {
-            calc.OpenFormater(lbl_test); 
+            calc.OpenFormater(lbl_test);
+            //calc.OpenFile(txtB_Dateiname.Text);
+            MessageBox.Show("Finished");
+        }
+
+        private void btn_addChange_Click(object sender, EventArgs e)
+        {
+            calc.saveNewInfo(txtBox_posX.Text, txtBox_posY.Text, txtBox_Change.Text, txtBox_Start.Text, txtBox_Duration.Text);
+            MessageBox.Show("Information has been added");
         }
     }
 }

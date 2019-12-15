@@ -111,9 +111,11 @@ namespace ExelManipulator
             range.Font.Underline = underline;
         }
 
-        public void changeColor(int startRow, int startLine, int endRow, int EndLine, XlRgbColor color)
+        public void changeColor(int Row, int Line, XlRgbColor color)
         {
-            Range range = ws.Range[ws.Cells[++startRow, ++startLine], ws.Cells[++endRow, ++EndLine]];
+            Row++;
+            Line++;
+            Range range = ws.Range[ws.Cells[Row, Line], ws.Cells[Row, Line]];
             range.Interior.Color = color;
         }
 
