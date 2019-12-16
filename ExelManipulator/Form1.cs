@@ -28,8 +28,8 @@ namespace ExelManipulator
 
         private void btn_openfile_Click(object sender, EventArgs e)
         {
-            calc.OpenFormater(lbl_test);
-            //calc.OpenFile(txtB_Dateiname.Text);
+            //calc.OpenFormater(lbl_test);
+            calc.OpenFile(txtB_Dateiname.Text);
             MessageBox.Show("Finished");
         }
 

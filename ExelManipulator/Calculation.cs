@@ -220,13 +220,14 @@ namespace ExelManipulator
                             ReadFrom.WriteToCell(i, a+2, toLoad[i, a+2].ToString());
                             ReadFrom.WriteToCell(i, a+3, toLoad[i, a+3].ToString());
                             ReadFrom.WriteToCell(i, a+4, toLoad[i, a+4].ToString());
+                            ReadFrom.WriteToCell(i, a + 5, toLoad[i, a + 5].ToString());
                         }
                     }
-                    Console.WriteLine("lol");
+                    //Console.WriteLine("lol");
                 }
-                Console.WriteLine("sdfsda");
                 ReadFrom.Save();
-                Console.WriteLine("sdlliiki");
+                Console.WriteLine(ReadFrom.ReadCellS(3, 1));
+                //Console.WriteLine("sdlliiki");
                 for (int i = 0; i < row; i++)
                 {
                     for (int a = 0; a < line; a++)
@@ -249,6 +250,7 @@ namespace ExelManipulator
                     }
                 }
                 ReadFrom.Save();
+                Console.WriteLine(ReadFrom.ReadCellS(3, 1));
                 for (int i = 0; i < row; i++)
                 {
                     for (int a = 0; a < line; a++)
@@ -261,23 +263,34 @@ namespace ExelManipulator
                     }
                 }
                 ReadFrom.Save();
+                Console.WriteLine(ReadFrom.ReadCellS(3, 1));
                 excel.changeWorksheet(3);
                 for (int i = 2; i < change_row; i++)
                 {
                     if (excel.ReadCellS(i,3).Equals("0") && excel.ReadCellS(i, 4).Equals("0"))
                     {
-                        for (int a = i; a < change_row; a++)
+                        for (int a = i; a < change_row + 1; a++)
                         {
                             for (int t = 0; t < 5; t++)
                             {
-                                ReadFrom.WriteToCell(a, t, ReadFrom.ReadCellS(a + 1, t));
+                                excel.WriteToCell(a, t, excel.ReadCellS(a + 1, t));
                             }
-                            change_row--;
-                            i--;
                         }
+                        change_row--;
+                        i--;
                     }
                 }
-                ReadFrom.Save();
+                int mon = int.Parse(excel.ReadCellS(0, 0));
+                mon++;
+                if (mon > 12)
+                {
+                    int y = int.Parse(excel.ReadCellS(0, 1));
+                    y++;
+                    excel.WriteToCell(0, 1, y.ToString());
+                    mon = 1;
+                }
+                excel.WriteToCell(0, 0, mon.ToString());
+                excel.Save();
             }
             catch (Exception e)
             {
@@ -442,22 +455,26 @@ namespace ExelManipulator
 
         public void OpenFile(string filename)
         {
-            Console.WriteLine(convertSumme("!SUMME(I3:I20)"));
-            string lol = "!A1*2";
-            Excel excel = new Excel(filename, 1);
-            excel.WriteToCell(0, 0, "1293");
-            excel.WriteToCell(1, 1, "=" + lol.Substring(1));
-            excel.Save();
-            string outputString = "";
+            Excel excel = new Excel(filename, 3);
             try
             {
-                excel.changeFormat(0, 2, "0.00");
-                excel.WriteToCell(0, 2, "12.223");
-                excel.ChangeText(0, 2, "Calibri", 11, true, false, false);
-                excel.Save();
-                double temp = excel.ReadCellD(0, 1);
-                excel.changeColor(0, 2, XlRgbColor.rgbAzure);
-                outputString = temp.ToString();
+                int change_row = 2;
+                while (!excel.ReadCellS(change_row, 0).Equals("x")) change_row++;
+                for (int i = 2; i < change_row; i++)
+                {
+                    if (excel.ReadCellS(i, 3).Equals("0") && excel.ReadCellS(i, 4).Equals("0"))
+                    {
+                        for (int a = i; a < change_row + 1; a++)
+                        {
+                            for (int t = 0; t < 5; t++)
+                            {
+                                excel.WriteToCell(a, t, excel.ReadCellS(a + 1, t));
+                            }
+                        }
+                        change_row--;
+                        i--;
+                    }
+                }
                 excel.Save();
             }
             catch (Exception e)
